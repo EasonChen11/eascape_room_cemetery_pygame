@@ -17,27 +17,43 @@ BLACK = (0, 0, 0)
 FINISH_COLOR = (255, 240, 212)
 WIDTH = 1530
 HEIGHT = 780
-image_scale = 900
-
+image_scale = 1000
+button_5 = 5
+button_7 = 7
+button_sqrt = 'sqrt'
 # 遊戲初始化 and 創建視窗
 pygame.init()
 # 視窗大小
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("escape room")    # 視窗標題
 icon_image = pygame.image.load("./img/icon.png").convert()
+icon_image.set_colorkey(BLACK)
 pygame.display.set_icon(icon_image)
 all_sprites = pygame.sprite.Group()
 
 # 背景音樂
 pygame.mixer.init()
 pygame.mixer.music.load(f"./music/{random.randrange(0, 6)}.mp3")
-pygame.mixer.music.play()
+#pygame.mixer.music.play()
 
 # FPS
 clock = pygame.time.Clock()
 
-font_name = os.path.join("./Terror.ttf")  # 取的字型
+# 取得字型
+font_name = os.path.join("./Terror.ttf")
 number_name = pygame.font.match_font('arial')
+
+# 載入所需圖片
+nuber_list_background = pygame.image.load("./img/icon2.jpg").convert()
+nuber_list_background.set_colorkey(BLACK)
+# rule_image = pygame.image.load("./img/").convert()
+# rule_image.set_colorkey(BLACK)
+# button_images = {button_5: [], button_7: [], button_sqrt: []}
+# for which_button in button_images:
+#     for number_of_pictures in range():
+#         save_image = pygame.image.load("./img/").convert()
+#         button_images[which_button].append(save_image.set_colorkey(WHITE))
+
 
 class list_TEXT:
 
@@ -45,19 +61,32 @@ class list_TEXT:
         self.x = WIDTH/4-100
         self.y = 100
         self.length = 0
+        self.change_line_llu = 4
+        self.change_line_times = 0
+        self.small_change_y = (0, 5, -5)
+        self.random_index = random.randrange(0, self.small_change_y.__sizeof__(), 1)
+        self.small_change_y_index = self.random_index
 
     def reset(self):
-        self.x = WIDTH/4-55
-        self.y = 100
+        self.x = WIDTH*3/5+80
+        self.y = 300
         self.length = 0
+        self.change_line_times = 0
+        self.small_change_y_index = self.random_index
+        self.change_line_llu = 4
 
     def update(self):
-        self.x += 65
+        self.x += 85
         self.length += 1
+        self.small_change_y_index += 1
 
     def change_line(self):
-        self.x = WIDTH/4-55
-        self.y += 55
+        if self.change_line_times > 2:
+            self.change_line_llu = 3
+            self.x = WIDTH*3/5+130
+        else:
+            self.x = WIDTH*3/5+80
+        self.y += 75
         self.length = 0
 
     def draw(self, surface, text, size, color):
@@ -65,7 +94,7 @@ class list_TEXT:
         self.text_surface = font.render(text, True, color)  # 製造文字平面(文字,Anti-aliasing{抗鋸齒文字},字體顏色)
         self.text_rect = self.text_surface.get_rect()
         self.text_rect.centerx = self.x
-        self.text_rect.centery = self.y
+        self.text_rect.centery = self.y+self.small_change_y[self.small_change_y_index % 3]
         surface.blit(self.text_surface, self.text_rect)
 
     def show_screen(self):
@@ -73,11 +102,12 @@ class list_TEXT:
         global index
         for i in ans_list:
             if i in need_list[0:index+1:]:
-                locate_text.draw(screen, f"{i}", 50, RED)
+                locate_text.draw(screen, f"{i}", 70, RED)
             else:
-                locate_text.draw(screen, f"{i}", 50, BLACK)
+                locate_text.draw(screen, f"{i}", 70, BLACK)
             locate_text.update()
-            if locate_text.length > 5:
+            if locate_text.length >= self.change_line_llu:
+                self.change_line_times += 1
                 locate_text.change_line()
         # bottom_line.reset(locate_text.length, len(ans_list)//6)
         if need_list[index] == ans_list[-1]:
@@ -88,10 +118,9 @@ need_list = [2, 10, 14]
 game = True
 ans_list = [5]
 index = 0
-icon_image.set_colorkey(WHITE)
-icon_image = pygame.transform.scale(icon_image, (image_scale, image_scale))
-icon_image_rect = icon_image.get_rect()
-icon_image_rect.center = (WIDTH/2, HEIGHT/2)
+nuber_list_background = pygame.transform.scale(nuber_list_background, (image_scale+600, image_scale))
+nuber_list_background_rect = nuber_list_background.get_rect()
+nuber_list_background_rect.center = (WIDTH*3/4-50, HEIGHT/2+20)
 while game:
     # initial_game()
     # set origin
@@ -124,8 +153,8 @@ while game:
     '''
     # 遊戲迴圈
     while running and index < 3:
-        screen.fill(BLACK)
-        screen.blit(icon_image, icon_image_rect)
+        screen.fill(WHITE)
+        screen.blit(nuber_list_background, nuber_list_background_rect)
         clock.tick(FPS)                     # 一秒最多刷新FPS次(1秒跑最多幾次while)
         # 取得輸入
         for event in pygame.event.get():     # 回傳所有動作
