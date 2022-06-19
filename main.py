@@ -88,7 +88,7 @@ need_list = [2, 10, 14]
 game = True
 ans_list = [5]
 index = 0
-
+icon_image.set_colorkey(WHITE)
 icon_image = pygame.transform.scale(icon_image, (image_scale, image_scale))
 icon_image_rect = icon_image.get_rect()
 icon_image_rect.center = (WIDTH/2, HEIGHT/2)
@@ -124,7 +124,7 @@ while game:
     '''
     # 遊戲迴圈
     while running and index < 3:
-        screen.fill(WHITE)
+        screen.fill(BLACK)
         screen.blit(icon_image, icon_image_rect)
         clock.tick(FPS)                     # 一秒最多刷新FPS次(1秒跑最多幾次while)
         # 取得輸入
