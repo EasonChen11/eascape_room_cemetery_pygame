@@ -48,11 +48,11 @@ nuber_list_background = pygame.image.load("./img/icon2.jpg").convert()
 nuber_list_background.set_colorkey(BLACK)
 # rule_image = pygame.image.load("./img/").convert()
 # rule_image.set_colorkey(BLACK)
-# button_images = {button_5: [], button_7: [], button_sqrt: []}
-# for which_button in button_images:
-#     for number_of_pictures in range():
-#         save_image = pygame.image.load("./img/").convert()
-#         button_images[which_button].append(save_image.set_colorkey(WHITE))
+button_images = {button_5: [], button_7: [], button_sqrt: []}
+for which_button in button_images:
+    for number_of_pictures in range(2):
+        save_image = pygame.image.load(f"./img/{which_button}_{number_of_pictures}.jpg").convert()
+        button_images[which_button].append(save_image.set_colorkey(WHITE))
 
 
 class list_TEXT:
@@ -113,6 +113,96 @@ class list_TEXT:
         if need_list[index] == ans_list[-1]:
             index += 1
 
+class button (pygame.sprite.Sprite):
+    def __init__(self, center, button_name):
+        self.click = False
+        pygame.sprite.Sprite.__init__(self)
+        self.frame = 0
+        self.name = button_name
+        self.image = button_image[button_name][self.frame]
+        self.rect = self.image.get_rect()
+        self.origin_center = center
+        self.rect.center = self.origin_center
+        self.sensor_rect = pygame.Rect(center, (120, 110))
+        self.sensor_rect.center = center
+        self.last_update = pygame.time.get_ticks()
+        self.frame_rate = 5000
+        self.keydown = False
+        self.downy = 4
+        self.downx = 1
+
+    def update(self):
+        global which_button_click
+        mouse_press = pygame.mouse.get_pos()
+        if self.click:
+            self.animationOfButton()
+        else:
+            if self.sensor_rect.collidepoint(mouse_press):
+                if pygame.mouse.get_pressed()[0]:
+                    if not which_button_click:
+                        which_button_click = True
+                        self.keydown = True
+                        global running
+                        self.last_update = pygame.time.get_ticks()
+                        self.click = True
+                        if self.name == 5:
+                            ans_list.append(ans_list[-1] + 5)
+                        if self.name == 7:
+                            ans_list.append(ans_list[-1] + 7)
+                        if self.name == 'sqrt':
+                            append_number = round(sqrt(ans_list[-1]), 2)  # round 四捨五入到小數兩位
+                            if append_number - int(append_number) == 0:
+                                ans_list.append(int(append_number))
+                            else:
+                                ans_list.append(append_number)
+
+                        if check_list.get(ans_list[-1]):
+                            running = False
+                            which_error["repeat"][1] = True
+                        else:
+                            check_list[ans_list[-1]] = True
+                        if ans_list[-1] - int(ans_list[-1]) != 0:
+                            running = False
+                            which_error["decimal"][1] = True
+                        if ans_list[-1] > 50:
+                            running = False
+                            which_error["big than 50"][1] = True
+
+    def animationOfButton(self):
+        global which_button_click
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame:     # 瞬間當下時間 跟 創建時間差 到換圖時間(ex.時間差到50ms時換下張圖)
+            self.last_update = now
+            if self.keydown:
+                self.frame += 1
+                if self.frame < len(button_image[self.name]):
+                    self.image = button_image[self.name][self.frame]
+                    center = self.rect.center
+                    self.rect = self.image.get_rect()
+                    self.rect.center = center
+                    self.rect.y += self.downy
+                    self.rect.x -= self.downx
+                else:
+                    self.keydown = False
+            else:
+                if not pygame.mouse.get_pressed()[0]:
+                    self.frame -= 1
+                    if self.frame >= 0:
+                        self.image = button_image[self.name][self.frame]
+                        center = self.rect.center
+                        self.rect = self.image.get_rect()
+                        self.rect.center = center
+                        self.rect.y -= self.downy
+                        self.rect.x += self.downx
+                    else:
+                        self.image = button_image[self.name][0]
+                        self.rect = self.image.get_rect(center=self.origin_center)
+                        self.rect.center = self.origin_center
+                        self.frame = 0
+                        self.keydown = True
+                        self.click = False
+                        self.other_click = False
+                        which_button_click = False
 
 need_list = [2, 10, 14]
 game = True
