@@ -48,6 +48,13 @@ nuber_list_background = pygame.image.load("./img/icon2.jpg").convert()
 nuber_list_background.set_colorkey(BLACK)
 # rule_image = pygame.image.load("./img/").convert()
 # rule_image.set_colorkey(BLACK)
+try_again_images = []
+for do_again in range(2):
+    try_again_image = pygame.image.load(f"./img/try again_{do_again}.jpg").convert()
+    try_again_image.set_colorkey(BLACK)
+    try_again_image = pygame.transform.scale(try_again_image, (image_scale / 7, image_scale / 7))
+    try_again_images.append(try_again_image)
+
 button_images = {button_5: [], button_7: [], button_sqrt: []}
 for which_button in button_images:
     for number_of_pictures in range(2):
@@ -139,42 +146,116 @@ class button (pygame.sprite.Sprite):
                 self.rect.center = self.basis_center
                 self.click = False
                 each_button_click = False
+                self.check_which_error()
+
         else:
             mouse_press = pygame.mouse.get_pos()
             if self.rect.collidepoint(mouse_press):
                 if pygame.mouse.get_pressed()[0]:
                     if not each_button_click:
-                        global locate_text
                         each_button_click = True
                         self.click = True
                         self.frame = 1
                         self.image = button_images[self.name][self.frame]
                         self.rect = self.image.get_rect()
                         self.rect.center = self.basis_center
-                        # input
-                        if self.name == 5:
-                            locate_text.ans_list.append(locate_text.ans_list[-1] + 5)
-                        if self.name == 7:
-                            locate_text.ans_list.append(locate_text.ans_list[-1] + 7)
-                        if self.name == 'sqrt':
-                            append_number = round(sqrt(locate_text.ans_list[-1]), 2)  # round 四捨五入到小數兩位
-                            if append_number - int(append_number) == 0:
-                                locate_text.ans_list.append(int(append_number))
-                            else:
-                                locate_text.ans_list.append(append_number)
-                        # check error
-                        global running
-                        if locate_text.check_list.get(locate_text.ans_list[-1]):
-                            running = False
-                            which_error["repeat"][1] = True
-                        else:
-                            locate_text.check_list[locate_text.ans_list[-1]] = True
-                        if locate_text.ans_list[-1] - int(locate_text.ans_list[-1]) != 0:
-                            running = False
-                            which_error["decimal"][1] = True
-                        if locate_text.ans_list[-1] > 50:
-                            running = False
-                            which_error["big than 50"][1] = True
+                        self.input_number()
+
+    def input_number(self):
+        # input
+        global locate_text
+        if self.name == 5:
+            locate_text.ans_list.append(locate_text.ans_list[-1] + 5)
+        if self.name == 7:
+            locate_text.ans_list.append(locate_text.ans_list[-1] + 7)
+        if self.name == 'sqrt':
+            append_number = round(sqrt(locate_text.ans_list[-1]), 2)  # round 四捨五入到小數兩位
+            if append_number - int(append_number) == 0:
+                locate_text.ans_list.append(int(append_number))
+            else:
+                locate_text.ans_list.append(append_number)
+
+    def check_which_error(self):
+        global running, try_again, locate_text
+        if locate_text.check_list.get(locate_text.ans_list[-1]):
+            running = False
+            try_again.force_click = True
+            which_error["repeat"][1] = True
+        else:
+            locate_text.check_list[locate_text.ans_list[-1]] = True
+        if locate_text.ans_list[-1] - int(locate_text.ans_list[-1]) != 0:
+            running = False
+            try_again.force_click = True
+            which_error["decimal"][1] = True
+        if locate_text.ans_list[-1] > 50:
+            running = False
+            try_again.force_click = True
+            which_error["big than 50"][1] = True
+
+
+class Tryagain(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.frame = 0
+        self.image = try_again_images[self.frame]
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH/2, HEIGHT/2)
+        self.basis_center = self.rect.center
+        self.click = False
+        self.force_click = False
+
+    def update(self):
+        global each_button_click, running
+        if self.click:
+            if not pygame.mouse.get_pressed()[0]:
+                self.frame = 0
+                self.image = try_again_images[self.frame]
+                self.rect = self.image.get_rect()
+                self.rect.center = self.basis_center
+                self.click = False
+                each_button_click = False
+                global running
+                running = False
+        else:
+            mouse_press = pygame.mouse.get_pos()
+            if self.rect.collidepoint(mouse_press):
+                if pygame.mouse.get_pressed()[0]:
+                    if not each_button_click:
+                        each_button_click = True
+                        self.click = True
+                        self.frame = 1
+                        self.image = try_again_images[self.frame]
+                        self.rect = self.image.get_rect()
+                        self.rect.center = self.basis_center
+
+    def force_doing(self):
+        self.frame = 1
+        self.image = try_again_images[self.frame]
+        self.rect = self.image.get_rect()
+        self.rect.center = self.basis_center
+        mouse_press = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_press):
+            if pygame.mouse.get_pressed()[0]:
+                self.frame = 0
+                self.image = try_again_images[self.frame]
+                self.rect = self.image.get_rect()
+                self.rect.center = self.basis_center
+                self.force_click = False
+
+
+def try_again_func():
+    global try_again, running, game
+    while try_again.force_click:
+        clock.tick(FPS)                     # 一秒最多刷新FPS次(1秒跑最多幾次while)
+        for event in pygame.event.get():     # 回傳所有動作
+            if event.type == pygame.QUIT:    # 如果按下X ,pygame.QUIT 是按下X後的型態
+                running = False             # 跳出迴圈
+                game = False
+                try_again.force_click = False
+        try_again.force_doing()
+        all_sprites.draw(screen)
+        pygame.display.flip()                      # 更新畫面=pygame.display.flip()更新全部，update可以有參數
+    time.sleep(0.2)
 
 
 locate_text = list_TEXT()
@@ -185,9 +266,13 @@ need_list = [2, 10, 14]
 which_error = {"repeat": ["數字重複啦", False], "decimal": ["啥?有小數點", False], "big than 50": ["數字>50啦", False]}
 game = True
 index = 0
+
+# background
 nuber_list_background = pygame.transform.scale(nuber_list_background, (image_scale+600, image_scale))
 nuber_list_background_rect = nuber_list_background.get_rect()
 nuber_list_background_rect.center = (WIDTH*3/4-50, HEIGHT/2+20)
+
+
 while game:
     # initial_game()
     # set origin
@@ -202,6 +287,8 @@ while game:
     all_sprites.add(add5)
     all_sprites.add(add7)
     all_sprites.add(Sqrt)
+    try_again = Tryagain()
+    all_sprites.add(try_again)
     '''
     check_list = {5: True}
     click_rule = Rule()
@@ -260,10 +347,14 @@ while game:
         all_sprites.draw(screen)
         pygame.display.flip()                      # 更新畫面=pygame.display.flip()更新全部，update可以有參數
     if game:
-        add5.kill()
-        add7.kill()
-        Sqrt.kill()
-        locate_text.__init__()
+        if index < 3:
+            if try_again.force_click:
+                try_again_func()
+            try_again.kill()
+            add5.kill()
+            add7.kill()
+            Sqrt.kill()
+            locate_text.__init__()
 
 pygame.mixer.music.stop()
 pygame.quit()
