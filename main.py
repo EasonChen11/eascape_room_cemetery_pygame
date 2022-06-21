@@ -51,9 +51,10 @@ nuber_list_background.set_colorkey(BLACK)
 button_images = {button_5: [], button_7: [], button_sqrt: []}
 for which_button in button_images:
     for number_of_pictures in range(2):
+        print(button_images, which_button)
         save_image = pygame.image.load(f"./img/{which_button}_{number_of_pictures}.jpg").convert()
-        button_images[which_button].append(save_image.set_colorkey(WHITE))
-
+        save_image.set_colorkey(WHITE)
+        button_images[which_button].append(save_image)
 
 class list_TEXT:
 
@@ -113,13 +114,14 @@ class list_TEXT:
         if need_list[index] == ans_list[-1]:
             index += 1
 
+
 class button (pygame.sprite.Sprite):
     def __init__(self, center, button_name):
         self.click = False
         pygame.sprite.Sprite.__init__(self)
         self.frame = 0
         self.name = button_name
-        self.image = button_image[button_name][self.frame]
+        self.image = pygame.transform.scale(button_images[self.name][self.frame], (image_scale, image_scale))
         self.rect = self.image.get_rect()
         self.origin_center = center
         self.rect.center = self.origin_center
@@ -175,8 +177,8 @@ class button (pygame.sprite.Sprite):
             self.last_update = now
             if self.keydown:
                 self.frame += 1
-                if self.frame < len(button_image[self.name]):
-                    self.image = button_image[self.name][self.frame]
+                if self.frame < len(button_images[self.name]):
+                    self.image = button_images[self.name][self.frame]
                     center = self.rect.center
                     self.rect = self.image.get_rect()
                     self.rect.center = center
@@ -188,14 +190,14 @@ class button (pygame.sprite.Sprite):
                 if not pygame.mouse.get_pressed()[0]:
                     self.frame -= 1
                     if self.frame >= 0:
-                        self.image = button_image[self.name][self.frame]
+                        self.image = button_images[self.name][self.frame]
                         center = self.rect.center
                         self.rect = self.image.get_rect()
                         self.rect.center = center
                         self.rect.y -= self.downy
                         self.rect.x += self.downx
                     else:
-                        self.image = button_image[self.name][0]
+                        self.image = button_images[self.name][0]
                         self.rect = self.image.get_rect(center=self.origin_center)
                         self.rect.center = self.origin_center
                         self.frame = 0
@@ -204,7 +206,10 @@ class button (pygame.sprite.Sprite):
                         self.other_click = False
                         which_button_click = False
 
+
 need_list = [2, 10, 14]
+check_list = {5: True}
+which_error = {"repeat": ["數字重複啦", False], "decimal": ["啥?有小數點", False], "big than 50": ["數字>50啦", False]}
 game = True
 ans_list = [5]
 index = 0
@@ -217,6 +222,12 @@ while game:
     index = 0
     running = True
     ans_list = [5]
+    add5 = button((WIDTH/2, HEIGHT/2), button_5)
+    add7 = button((WIDTH/2, HEIGHT/2), button_7)
+    Sqrt = button((WIDTH/2, HEIGHT/2), button_sqrt)
+    all_sprites.add(add5)
+    all_sprites.add(add7)
+    all_sprites.add(Sqrt)
     '''
     check_list = {5: True}
     which_button_click = False
