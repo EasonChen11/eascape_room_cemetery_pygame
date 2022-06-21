@@ -51,10 +51,11 @@ nuber_list_background.set_colorkey(BLACK)
 button_images = {button_5: [], button_7: [], button_sqrt: []}
 for which_button in button_images:
     for number_of_pictures in range(2):
-        print(button_images, which_button)
         save_image = pygame.image.load(f"./img/{which_button}_{number_of_pictures}.jpg").convert()
         save_image.set_colorkey(WHITE)
+        save_image = pygame.transform.scale(save_image, (image_scale/7, image_scale/7))
         button_images[which_button].append(save_image)
+
 
 class list_TEXT:
 
@@ -82,12 +83,12 @@ class list_TEXT:
         self.small_change_y_index += 1
 
     def change_line(self):
-        if self.change_line_times > 2:
+        if self.change_line_times > 4:
             self.change_line_llu = 3
             self.x = WIDTH*3/5+130
         else:
             self.x = WIDTH*3/5+80
-        self.y += 75
+        self.y += 55
         self.length = 0
 
     def draw(self, surface, text, size, color):
@@ -103,9 +104,9 @@ class list_TEXT:
         global index
         for i in ans_list:
             if i in need_list[0:index+1:]:
-                locate_text.draw(screen, f"{i}", 70, RED)
+                locate_text.draw(screen, f"{i}", 50, RED)
             else:
-                locate_text.draw(screen, f"{i}", 70, BLACK)
+                locate_text.draw(screen, f"{i}", 50, BLACK)
             locate_text.update()
             if locate_text.length >= self.change_line_llu:
                 self.change_line_times += 1
@@ -121,7 +122,7 @@ class button (pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.frame = 0
         self.name = button_name
-        self.image = pygame.transform.scale(button_images[self.name][self.frame], (image_scale, image_scale))
+        self.image = button_images[self.name][self.frame]
         self.rect = self.image.get_rect()
         self.origin_center = center
         self.rect.center = self.origin_center
@@ -222,9 +223,9 @@ while game:
     index = 0
     running = True
     ans_list = [5]
-    add5 = button((WIDTH/2, HEIGHT/2), button_5)
-    add7 = button((WIDTH/2, HEIGHT/2), button_7)
-    Sqrt = button((WIDTH/2, HEIGHT/2), button_sqrt)
+    add5 = button((WIDTH*3/4-150, HEIGHT*5/6+50), button_5)
+    add7 = button((WIDTH*3/4, HEIGHT*5/6+50), button_7)
+    Sqrt = button((WIDTH*3/4+150, HEIGHT*5/6+50), button_sqrt)
     all_sprites.add(add5)
     all_sprites.add(add7)
     all_sprites.add(Sqrt)
@@ -254,7 +255,7 @@ while game:
     '''
     # 遊戲迴圈
     while running and index < 3:
-        screen.fill(WHITE)
+        screen.fill(BLACK)
         screen.blit(nuber_list_background, nuber_list_background_rect)
         clock.tick(FPS)                     # 一秒最多刷新FPS次(1秒跑最多幾次while)
         # 取得輸入
