@@ -180,20 +180,20 @@ class Button(pygame.sprite.Sprite):
 
     def check_which_error(self):
         global running, try_again, locate_text
-        if locate_text.check_list.get(locate_text.ans_list[-1]):
+        if locate_text.ans_list[-1] - int(locate_text.ans_list[-1]) != 0:
+            running = False
+            try_again.force_click = True
+            which_error["decimal"][1] = True
+        elif locate_text.ans_list[-1] > 50:
+            running = False
+            try_again.force_click = True
+            which_error["big than 50"][1] = True
+        elif locate_text.check_list.get(locate_text.ans_list[-1]):
             running = False
             try_again.force_click = True
             which_error["repeat"][1] = True
         else:
             locate_text.check_list[locate_text.ans_list[-1]] = True
-        if locate_text.ans_list[-1] - int(locate_text.ans_list[-1]) != 0:
-            running = False
-            try_again.force_click = True
-            which_error["decimal"][1] = True
-        if locate_text.ans_list[-1] > 50:
-            running = False
-            try_again.force_click = True
-            which_error["big than 50"][1] = True
 
 
 class Tryagain(pygame.sprite.Sprite):
@@ -246,6 +246,53 @@ class Tryagain(pygame.sprite.Sprite):
                 self.force_click = False
 
 
+class Rule(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        # self.sensor_rect = pygame.Rect((0, 0), (40, 40))
+        self.image = rule_background
+        self.rect = self.image.get_rect()
+        self.rect.center = (700, 400)
+        print(self.rect.left, self.rect.width)
+        self.text = ["1.面板有三個按鈕，+5, +7 和開根號",
+                     "2.用滑鼠按下按鈕完成謎題",
+                     "3.計數從5開始",
+                     "4.顯示器上要必須依序出現",
+                     "      2, 10, 14這三個數字(如:1,2,10,14...)",
+                     "5.顯示器上可以顯示任何數字，但有些條件:",
+                     "      a)同一個數字不能出現兩次(包含第一個5)",
+                     "      b)顯示器上的數字不能大於50",
+                     "      c)不能出現小數(開根號不能有小數)",
+                     "6.可以按下左上角'?'顯示規則",
+                     "7.可以按下右上角圖示重新開始"]
+        self.size = 20
+        self.font = pygame.font.Font(rule_font, self.size)
+        self.color = (204, 94, 63)
+        self.click = False
+        # self.draw(self.sensor_rect.width / 2, self.sensor_rect.height / 2)
+
+    def update(self):
+        mouse_press = pygame.mouse.get_pos()
+        self.draw(self.rect.left, self.rect.top)
+        if self.click:
+            self.click = False
+            # show_rule()
+        if self.rect.collidepoint(mouse_press):
+            if pygame.mouse.get_pressed()[0]:
+                self.click = True
+            # screen.blit(self.image, self.rect.center)
+
+    def draw(self, x, y):
+        for text in self.text:
+            text_surface = self.font.render(text, True, self.color)  # 製造文字平面(文字,Anti-aliasing{抗鋸齒文字},字體顏色)
+            text_rect = text_surface.get_rect()
+            text_rect.left = x
+            # print(text_rect.left)
+            text_rect.centery = y
+            self.image.blit(text_surface, text_rect)
+            y += 30
+
+
 def try_again_func():
     global try_again, running, game
     while try_again.force_click:
@@ -267,15 +314,10 @@ def finish_func():
 
 locate_text = ListText()
 each_button_click = False
-# check_list = {5: True}
-# ans_list = [5]
 need_list = [2, 10, 14]
 which_error = {"repeat": ["數字重複啦", False], "decimal": ["啥?有小數點", False], "big than 50": ["數字>50啦", False]}
 game = True
 index = 0
-
-# background
-
 
 while game:
     # initial_game()
@@ -283,8 +325,6 @@ while game:
     each_button_click = False
     index = 0
     running = True
-    '''ans_list = [5]
-     check_list = {5: True}'''
     # create sprites
     add5 = Button((WIDTH*3/4-150, HEIGHT*5/6+50), button_5)
     add7 = Button((WIDTH*3/4, HEIGHT*5/6+50), button_7)
@@ -294,9 +334,9 @@ while game:
     all_sprites.add(Sqrt)
     try_again = Tryagain()
     all_sprites.add(try_again)
+    rule = Rule()
+    all_sprites.add(rule)
     '''
-    check_list = {5: True}
-    click_rule = Rule()
     if first_start:
         show_rule()
         first_start = False
@@ -348,6 +388,7 @@ while game:
             add5.kill()
             add7.kill()
             Sqrt.kill()
+            rule.kill()
             locate_text.__init__()
         else:
             finish_func()
@@ -355,5 +396,6 @@ while game:
             add5.kill()
             add7.kill()
             Sqrt.kill()
+            rule.kill()
 pygame.mixer.music.stop()
 pygame.quit()
