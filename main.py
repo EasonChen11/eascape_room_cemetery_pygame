@@ -67,6 +67,9 @@ for which_button in button_images:
 class ListText:
 
     def __init__(self):
+        self.background = pygame.transform.scale(nuber_list_background, (image_scale + 600, image_scale))
+        self.rect = self.background.get_rect()
+        self.rect.center = (WIDTH * 3 / 4 - 50, HEIGHT / 2 + 20)
         self.ans_list = [5]
         self.check_list = {5: True}
         self.x = WIDTH*3/5+80
@@ -272,9 +275,6 @@ game = True
 index = 0
 
 # background
-nuber_list_background = pygame.transform.scale(nuber_list_background, (image_scale+600, image_scale))
-nuber_list_background_rect = nuber_list_background.get_rect()
-nuber_list_background_rect.center = (WIDTH*3/4-50, HEIGHT/2+20)
 
 
 while game:
@@ -283,8 +283,9 @@ while game:
     each_button_click = False
     index = 0
     running = True
-    # ans_list = [5]
-    # check_list = {5: True}
+    '''ans_list = [5]
+     check_list = {5: True}'''
+    # create sprites
     add5 = Button((WIDTH*3/4-150, HEIGHT*5/6+50), button_5)
     add7 = Button((WIDTH*3/4, HEIGHT*5/6+50), button_7)
     Sqrt = Button((WIDTH*3/4+150, HEIGHT*5/6+50), button_sqrt)
@@ -299,26 +300,15 @@ while game:
     if first_start:
         show_rule()
         first_start = False
-    # create sprites
-    add5 = button((image_scale / 2 - 16, HEIGHT - image_scale / 2), 5)
-    all_sprites.add(add5)
-    add7 = button((WIDTH / 2 + 4, HEIGHT - image_scale / 2), 7)
-    all_sprites.add(add7)
-    Sqrt = button((WIDTH - image_scale / 2 + 17, HEIGHT - image_scale / 2), 'sqrt')
-    all_sprites.add(Sqrt)
     bottom_line = BottomLine()
     all_sprites.add(bottom_line)
     '''
     # for event in pygame.event.get():  # 回傳所有動作
     #     if event.type == pygame.MOUSEBUTTONUP:  # 如果按下X ,pygame.QUIT 是按下X後的型態
-    '''    
-    if game:
-        running = True
-    '''
     # 遊戲迴圈
     while running and index < 3:
         screen.fill(BLACK)
-        screen.blit(nuber_list_background, nuber_list_background_rect)
+        screen.blit(locate_text.background, locate_text.rect)
         clock.tick(FPS)                     # 一秒最多刷新FPS次(1秒跑最多幾次while)
         # 取得輸入
         for event in pygame.event.get():     # 回傳所有動作
