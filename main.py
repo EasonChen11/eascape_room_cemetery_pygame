@@ -34,20 +34,20 @@ all_sprites = pygame.sprite.Group()
 # 背景音樂
 pygame.mixer.init()
 pygame.mixer.music.load(f"./music/{random.randrange(0, 6)}.mp3")
-#pygame.mixer.music.play()
+# pygame.mixer.music.play()
 
 # FPS
 clock = pygame.time.Clock()
 
 # 取得字型
-font_name = os.path.join("./Terror.ttf")
-number_name = pygame.font.match_font('arial')
-
+number_font = os.path.join("./Terror.ttf")
+normal_font = pygame.font.match_font('arial')
+rule_font = os.path.join("./Brush.ttf")
 # 載入所需圖片
-nuber_list_background = pygame.image.load("./img/icon2.jpg").convert()
+nuber_list_background = pygame.image.load("./img/nuber_list_background.jpg").convert()
 nuber_list_background.set_colorkey(BLACK)
-# rule_image = pygame.image.load("./img/").convert()
-# rule_image.set_colorkey(BLACK)
+rule_background = pygame.image.load("./img/rule_background.jpg").convert()
+rule_background.set_colorkey(BLACK)
 try_again_images = []
 for do_again in range(2):
     try_again_image = pygame.image.load(f"./img/try again_{do_again}.jpg").convert()
@@ -64,7 +64,7 @@ for which_button in button_images:
         button_images[which_button].append(save_image)
 
 
-class list_TEXT:
+class ListText:
 
     def __init__(self):
         self.ans_list = [5]
@@ -101,12 +101,12 @@ class list_TEXT:
         self.length = 0
 
     def draw(self, surface, text, size, color):
-        font = pygame.font.Font(font_name, size)  # 給定字型和大小# font:字型 render:使成為
-        self.text_surface = font.render(text, True, color)  # 製造文字平面(文字,Anti-aliasing{抗鋸齒文字},字體顏色)
-        self.text_rect = self.text_surface.get_rect()
-        self.text_rect.centerx = self.x
-        self.text_rect.centery = self.y+self.small_change_y[self.small_change_y_index % 3]
-        surface.blit(self.text_surface, self.text_rect)
+        font = pygame.font.Font(number_font, size)  # 給定字型和大小# font:字型 render:使成為
+        text_surface = font.render(text, True, color)  # 製造文字平面(文字,Anti-aliasing{抗鋸齒文字},字體顏色)
+        text_rect = text_surface.get_rect()
+        text_rect.centerx = self.x
+        text_rect.centery = self.y+self.small_change_y[self.small_change_y_index % 3]
+        surface.blit(text_surface, text_rect)
 
     def show_screen(self):
         self.reset()
@@ -121,11 +121,9 @@ class list_TEXT:
                 self.change_line_times += 1
                 self.change_line()
         # bottom_line.reset(locate_text.length, len(ans_list)//6)
-        if need_list[index] == self.ans_list[-1]:
-            index += 1
 
 
-class button (pygame.sprite.Sprite):
+class Button(pygame.sprite.Sprite):
     def __init__(self, center, button_name):
         self.click = False
         pygame.sprite.Sprite.__init__(self)
@@ -163,7 +161,7 @@ class button (pygame.sprite.Sprite):
 
     def input_number(self):
         # input
-        global locate_text
+        global locate_text, index
         if self.name == 5:
             locate_text.ans_list.append(locate_text.ans_list[-1] + 5)
         if self.name == 7:
@@ -174,6 +172,8 @@ class button (pygame.sprite.Sprite):
                 locate_text.ans_list.append(int(append_number))
             else:
                 locate_text.ans_list.append(append_number)
+        if need_list[index] == locate_text.ans_list[-1]:
+            index += 1
 
     def check_which_error(self):
         global running, try_again, locate_text
@@ -258,7 +258,11 @@ def try_again_func():
     time.sleep(0.2)
 
 
-locate_text = list_TEXT()
+def finish_func():
+    pass
+
+
+locate_text = ListText()
 each_button_click = False
 # check_list = {5: True}
 # ans_list = [5]
@@ -281,9 +285,9 @@ while game:
     running = True
     # ans_list = [5]
     # check_list = {5: True}
-    add5 = button((WIDTH*3/4-150, HEIGHT*5/6+50), button_5)
-    add7 = button((WIDTH*3/4, HEIGHT*5/6+50), button_7)
-    Sqrt = button((WIDTH*3/4+150, HEIGHT*5/6+50), button_sqrt)
+    add5 = Button((WIDTH*3/4-150, HEIGHT*5/6+50), button_5)
+    add7 = Button((WIDTH*3/4, HEIGHT*5/6+50), button_7)
+    Sqrt = Button((WIDTH*3/4+150, HEIGHT*5/6+50), button_sqrt)
     all_sprites.add(add5)
     all_sprites.add(add7)
     all_sprites.add(Sqrt)
@@ -355,6 +359,11 @@ while game:
             add7.kill()
             Sqrt.kill()
             locate_text.__init__()
-
+        else:
+            finish_func()
+            try_again.kill()
+            add5.kill()
+            add7.kill()
+            Sqrt.kill()
 pygame.mixer.music.stop()
 pygame.quit()
