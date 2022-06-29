@@ -50,7 +50,7 @@ nuber_list_background = pygame.transform.scale(nuber_list_background, (image_sca
 
 rule_background = pygame.image.load("./img/rule_background_high.jpg").convert()
 rule_background.set_colorkey(BLACK)
-moon_images = []
+moon_images = {'yellow': [], 'red': []}
 try_again_images = []
 # try again images load
 for do_again in range(2):
@@ -72,11 +72,14 @@ bat_image.set_colorkey(WHITE)
 bat_image = pygame.transform.scale(bat_image, (image_scale/7, image_scale/7))
 
 # moon images load
-for do_again in range(2):
-    moon_image = pygame.image.load(f"./img/moon/moon_{do_again}.jpg").convert()
-    moon_image.set_colorkey(WHITE)
-    moon_image = pygame.transform.scale(moon_image, (image_scale / 7, image_scale / 7))
-    moon_images.append(moon_image)
+for color_moon in moon_images:
+    for do_again in range(2):
+        moon_image = pygame.image.load(f"./img/moon/{color_moon}_{do_again}.png").convert()
+        moon_image = pygame.transform.scale(moon_image, (image_scale, image_scale))
+        moon_image = moon_image.convert_alpha()
+        moon_image.fill((255, 0, 0, 50))
+        # moon_image.fill((100, 100, 100, 50))
+        moon_images[color_moon].append(moon_image)
 
 
 class ListText:
@@ -220,7 +223,7 @@ class Tryagain(pygame.sprite.Sprite):
         self.frame = 0
         self.image = try_again_images[self.frame]
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH/2, HEIGHT/2)
+        self.rect.center = (WIDTH-80, HEIGHT-100)
         self.basis_center = self.rect.center
         self.click = False
         self.force_click = False
@@ -315,7 +318,9 @@ class Rule(pygame.sprite.Sprite):
 
 class Moon:
     def __init__(self):
-        self.image = moon_images[0]
+        self.image = moon_images['yellow'][0]
+        self.rect = self.image.get_rect()
+        self.rect.center = (0, 0)
 
 
 def try_again_func():
@@ -374,8 +379,6 @@ while game:
     while running and index < 3:
         screen.fill(BLACK)
         screen.blit(locate_text.background, locate_text.rect)
-        screen.blit(moon.image, (WIDTH/2, HEIGHT/3))
-
         clock.tick(FPS)                     # 一秒最多刷新FPS次(1秒跑最多幾次while)
         # 取得輸入
         for event in pygame.event.get():     # 回傳所有動作
@@ -406,6 +409,8 @@ while game:
                 all_sprites.add(great)
         '''
         all_sprites.draw(screen)
+        screen.blit(moon.image, moon.rect.center)
+
         pygame.display.flip()                      # 更新畫面=pygame.display.flip()更新全部，update可以有參數
     if game:
         if index < 3:
