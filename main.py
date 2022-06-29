@@ -46,48 +46,66 @@ rule_font = os.path.join("./Brush.ttf")
 # 載入所需圖片
 nuber_list_background = pygame.image.load("./img/nuber_list_background.jpg").convert()
 nuber_list_background.set_colorkey(BLACK)
-rule_background = pygame.image.load("./img/rule_background.jpg").convert()
+nuber_list_background = pygame.transform.scale(nuber_list_background, (image_scale-400, image_scale-250))
+
+rule_background = pygame.image.load("./img/rule_background_high.jpg").convert()
 rule_background.set_colorkey(BLACK)
+moon_images = []
 try_again_images = []
+# try again images load
 for do_again in range(2):
     try_again_image = pygame.image.load(f"./img/try again_{do_again}.jpg").convert()
     try_again_image.set_colorkey(BLACK)
     try_again_image = pygame.transform.scale(try_again_image, (image_scale / 7, image_scale / 7))
     try_again_images.append(try_again_image)
-
+# button images load
 button_images = {button_5: [], button_7: [], button_sqrt: []}
 for which_button in button_images:
     for number_of_pictures in range(2):
-        save_image = pygame.image.load(f"./img/{which_button}_{number_of_pictures}.jpg").convert()
+        save_image = pygame.image.load(f"./img/button/{which_button}_{number_of_pictures}.jpg").convert()
         save_image.set_colorkey(WHITE)
         save_image = pygame.transform.scale(save_image, (image_scale/7, image_scale/7))
         button_images[which_button].append(save_image)
+# bat images load
+bat_image = pygame.image.load("./img/bat/bat.jpg").convert()
+bat_image.set_colorkey(WHITE)
+bat_image = pygame.transform.scale(bat_image, (image_scale/7, image_scale/7))
+
+# moon images load
+for do_again in range(2):
+    moon_image = pygame.image.load(f"./img/moon/moon_{do_again}.jpg").convert()
+    moon_image.set_colorkey(WHITE)
+    moon_image = pygame.transform.scale(moon_image, (image_scale / 7, image_scale / 7))
+    moon_images.append(moon_image)
 
 
 class ListText:
 
     def __init__(self):
-        self.background = pygame.transform.scale(nuber_list_background, (image_scale + 600, image_scale))
+        self.background = nuber_list_background.copy()
         self.rect = self.background.get_rect()
-        self.rect.center = (WIDTH * 3 / 4 - 50, HEIGHT / 2 + 20)
+        self.rect.center = (WIDTH * 3 / 4 + 20, HEIGHT / 2)
         self.ans_list = [5]
         self.check_list = {5: True}
-        self.x = WIDTH*3/5+80
-        self.y = 300
+        self.x = self.rect.left
+        self.y = self.rect.bottom
         self.length = 0
-        self.change_line_llu = 4
+        self.change_line_llu = 5
         self.change_line_times = 0
         self.small_change_y = (0, 5, -5)
+        self.size = 50
+        self.font = pygame.font.Font(number_font, self.size)  # 給定字型和大小# font:字型 render:使成為
         self.random_index = random.randrange(0, self.small_change_y.__sizeof__(), 1)
         self.small_change_y_index = self.random_index
 
     def reset(self):
-        self.x = WIDTH*3/5+80
-        self.y = 300
+        self.background = nuber_list_background.copy()
+        self.x = self.rect.width/12+50
+        self.y = self.rect.height/3+30
         self.length = 0
         self.change_line_times = 0
         self.small_change_y_index = self.random_index
-        self.change_line_llu = 4
+        self.change_line_llu = 5
 
     def update(self):
         self.x += 85
@@ -95,30 +113,30 @@ class ListText:
         self.small_change_y_index += 1
 
     def change_line(self):
-        if self.change_line_times > 4:
-            self.change_line_llu = 3
-            self.x = WIDTH*3/5+130
+        if self.change_line_times > 1:
+            self.change_line_llu = 4
+            self.x = self.rect.width / 12 + 90
         else:
-            self.x = WIDTH*3/5+80
-        self.y += 55
+            self.x = self.rect.width / 12 + 50
+        self.y += 60
         self.length = 0
 
-    def draw(self, surface, text, size, color):
-        font = pygame.font.Font(number_font, size)  # 給定字型和大小# font:字型 render:使成為
-        text_surface = font.render(text, True, color)  # 製造文字平面(文字,Anti-aliasing{抗鋸齒文字},字體顏色)
+    def draw(self, text, color):
+        text_surface = self.font.render(text, True, color)  # 製造文字平面(文字,Anti-aliasing{抗鋸齒文字},字體顏色)
+        # text_surface.fill(WHITE)
         text_rect = text_surface.get_rect()
         text_rect.centerx = self.x
         text_rect.centery = self.y+self.small_change_y[self.small_change_y_index % 3]
-        surface.blit(text_surface, text_rect)
+        self.background.blit(text_surface, text_rect)
 
     def show_screen(self):
         self.reset()
         global index
         for i in self.ans_list:
             if i in need_list[0:index+1:]:
-                self.draw(screen, f"{i}", 50, RED)
+                self.draw(f"{i}", RED)
             else:
-                self.draw(screen, f"{i}", 50, BLACK)
+                self.draw(f"{i}", BLACK)
             self.update()
             if self.length >= self.change_line_llu:
                 self.change_line_times += 1
@@ -251,29 +269,32 @@ class Rule(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # self.sensor_rect = pygame.Rect((0, 0), (40, 40))
         self.image = rule_background
+        self.image = pygame.transform.scale(self.image, (image_scale-50, image_scale-250))
         self.rect = self.image.get_rect()
-        self.rect.center = (700, 400)
-        print(self.rect.left, self.rect.width)
+        self.rect.center = (450, 400)
         self.text = ["1.面板有三個按鈕，+5, +7 和開根號",
                      "2.用滑鼠按下按鈕完成謎題",
                      "3.計數從5開始",
                      "4.顯示器上要必須依序出現",
-                     "      2, 10, 14這三個數字(如:1,2,10,14...)",
-                     "5.顯示器上可以顯示任何數字，但有些條件:",
-                     "      a)同一個數字不能出現兩次(包含第一個5)",
-                     "      b)顯示器上的數字不能大於50",
-                     "      c)不能出現小數(開根號不能有小數)",
-                     "6.可以按下左上角'?'顯示規則",
-                     "7.可以按下右上角圖示重新開始"]
-        self.size = 20
+                     "  2, 10, 14這三個數字",
+                     "   (如:1,2,10,14...)",
+                     "5.顯示器上可以顯示任何數字，",
+                     "  但有些條件:",
+                     "  a)同一個數字不能出現兩次",
+                     "    (包含第一個5)",
+                     "  b)顯示器上的數字不能大於50",
+                     "  c)不能出現小數(開根號不能有小數)",
+                     "6.可以按下銘文碑放大規則",
+                     "7.可以按下右下角火焰重新開始"]
+        self.size = 35
         self.font = pygame.font.Font(rule_font, self.size)
-        self.color = (204, 94, 63)
+        self.color = WHITE
         self.click = False
         # self.draw(self.sensor_rect.width / 2, self.sensor_rect.height / 2)
 
     def update(self):
         mouse_press = pygame.mouse.get_pos()
-        self.draw(self.rect.left, self.rect.top)
+        self.draw(self.rect.left+self.rect.width/5+10, self.rect.top+self.rect.height/5+10)
         if self.click:
             self.click = False
             # show_rule()
@@ -287,18 +308,22 @@ class Rule(pygame.sprite.Sprite):
             text_surface = self.font.render(text, True, self.color)  # 製造文字平面(文字,Anti-aliasing{抗鋸齒文字},字體顏色)
             text_rect = text_surface.get_rect()
             text_rect.left = x
-            # print(text_rect.left)
-            text_rect.centery = y
+            text_rect.centery = y-40
             self.image.blit(text_surface, text_rect)
-            y += 30
+            y += 40
+
+
+class Moon:
+    def __init__(self):
+        self.image = moon_images[0]
 
 
 def try_again_func():
     global try_again, running, game
     while try_again.force_click:
         clock.tick(FPS)                     # 一秒最多刷新FPS次(1秒跑最多幾次while)
-        for event in pygame.event.get():     # 回傳所有動作
-            if event.type == pygame.QUIT:    # 如果按下X ,pygame.QUIT 是按下X後的型態
+        for try_again_event in pygame.event.get():     # 回傳所有動作
+            if try_again_event.type == pygame.QUIT:    # 如果按下X ,pygame.QUIT 是按下X後的型態
                 running = False             # 跳出迴圈
                 game = False
                 try_again.force_click = False
@@ -313,12 +338,14 @@ def finish_func():
 
 
 locate_text = ListText()
+rule = Rule()
+all_sprites.add(rule)
+moon = Moon()
 each_button_click = False
 need_list = [2, 10, 14]
 which_error = {"repeat": ["數字重複啦", False], "decimal": ["啥?有小數點", False], "big than 50": ["數字>50啦", False]}
 game = True
 index = 0
-
 while game:
     # initial_game()
     # set origin
@@ -334,8 +361,6 @@ while game:
     all_sprites.add(Sqrt)
     try_again = Tryagain()
     all_sprites.add(try_again)
-    rule = Rule()
-    all_sprites.add(rule)
     '''
     if first_start:
         show_rule()
@@ -349,6 +374,8 @@ while game:
     while running and index < 3:
         screen.fill(BLACK)
         screen.blit(locate_text.background, locate_text.rect)
+        screen.blit(moon.image, (WIDTH/2, HEIGHT/3))
+
         clock.tick(FPS)                     # 一秒最多刷新FPS次(1秒跑最多幾次while)
         # 取得輸入
         for event in pygame.event.get():     # 回傳所有動作
@@ -388,7 +415,6 @@ while game:
             add5.kill()
             add7.kill()
             Sqrt.kill()
-            rule.kill()
             locate_text.__init__()
         else:
             finish_func()
@@ -396,6 +422,5 @@ while game:
             add5.kill()
             add7.kill()
             Sqrt.kill()
-            rule.kill()
 pygame.mixer.music.stop()
 pygame.quit()
