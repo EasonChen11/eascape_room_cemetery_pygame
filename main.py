@@ -46,7 +46,6 @@ nuber_list_background = pygame.transform.scale(nuber_list_background, (image_sca
 
 rule_background = pygame.image.load("./img/rule_background_high.jpg").convert()
 rule_background.set_colorkey(BLACK)
-moon_images = {'yellow': [], 'red': []}
 
 # try again images load
 try_again_images = {"normal": [], "again": []}
@@ -72,12 +71,12 @@ for which_button in button_images:
 bat_image = pygame.image.load("./img/bat/bat.png")
 
 # moon images load
+moon_images = {'yellow': [], 'red': []}
 for color_moon in moon_images:
-    for do_again in range(2):
-        moon_image = pygame.image.load(f"./img/moon/moon_{do_again}.png")
-        moon_image = pygame.transform.scale(moon_image, (image_scale/2, image_scale/3))
-        moon_image.set_colorkey(BLACK)
-        moon_images[color_moon].append(moon_image)
+    moon_image = pygame.image.load(f"./img/moon/moon_{color_moon}.png")
+    moon_image = pygame.transform.scale(moon_image, (image_scale/2, image_scale/3))
+    moon_image.set_colorkey(BLACK)
+    moon_images[color_moon].append(moon_image)
 
 # text image
 finish_text = []
@@ -211,9 +210,9 @@ class Button(pygame.sprite.Sprite):
         global locate_text, index
         if self.name == 5:
             locate_text.ans_list.append(locate_text.ans_list[-1] + 5)
-        if self.name == 7:
+        elif self.name == 7:
             locate_text.ans_list.append(locate_text.ans_list[-1] + 7)
-        if self.name == 'sqrt':
+        elif self.name == 'sqrt':
             append_number = round(sqrt(locate_text.ans_list[-1]), 2)  # round 四捨五入到小數兩位
             if append_number - int(append_number) == 0:
                 locate_text.ans_list.append(int(append_number))
@@ -221,6 +220,9 @@ class Button(pygame.sprite.Sprite):
                 locate_text.ans_list.append(append_number)
         if need_list[index] == locate_text.ans_list[-1]:
             index += 1
+            moon.red_moon()
+        else:
+            moon.__init__()
 
     def check_which_error(self):
         global running, try_again, locate_text
@@ -383,6 +385,10 @@ class Moon:
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH/2-100, 10)
 
+    def red_moon(self):
+        self.image = moon_images['red'][0]
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH/2-100, 10)
 
 class Bat:
     def __init__(self):
@@ -590,6 +596,7 @@ first_run = True
 while game:
     # initial_game()
     # set origin
+    moon.__init__()
     each_button_click = False
     index = 0
     running = True
